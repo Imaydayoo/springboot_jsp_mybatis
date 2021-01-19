@@ -1,93 +1,87 @@
-import java.util.*;
-
 class Solution {
-    public static int myAtoi(String s) {
-        s = s.replaceAll(" ", "");
+    public static int minCostConnectPoints(int[][] points) {
+        int n = points.length;
+        int[][] edges = new int[n][n];
+        for(int i = 0; i < n; i++) {
+            for(int j = 0; j < i; j++) {//边赋值
+                edges[i][j] = Math.abs(points[i][1] - points[j][1]) + Math.abs(points[i][0] - points[j][0]);
 
-        int begin = 0, end = 0, n = s.length();
-        if(n == 0 || (s.charAt(0) != '+' && s.charAt(0) != '-' && (s.charAt(0) - '0' < 0) ||
-                (s.charAt(0) - '0' >= 10))) {
-            return 0;
-        }
-        char[] array = s.toCharArray();
-        int i = 0, flag = 0;//flag代表是不是有符号
-        if(array[i] == '+') {
-            flag = 1;
-        }
-        if(array[i] == '-') {
-            flag = -1;
-        }
-        i++;
-        while(i < n && (array[i]-'0' >= 0  && array[i] - '0' <= 9)) {
-            i++;
-        }
-        end = i;
-        if(end - begin == 1 && (array[begin] == '+' || array[begin] == '-')) {
-            return 0;
-        }
-
-        //StringBuilder temp = new StringBuilder();
-        while(begin < end && (array[begin] - '0' <=0) || (array[begin] - '0' > 9)) {
-            begin++;
-        }
-        if(begin == end) {
-            return 0;
-        }
-        String ans = s.substring(begin, end);
-        if(flag == -1 && s.equals("2147483648")) {
-            return Integer.MIN_VALUE;
-        }
-        //String maxInt = "2147483647";
-        //String minInt = "2147483648";
-
-        if(compare(ans) > 0) {
-            if(flag >= 0) {
-                return Integer.MAX_VALUE;
-            } else {
-                return Integer.MIN_VALUE;
             }
         }
-        if(flag == 0) {
-            flag++;
+        UnionFind uf = new UnionFind(n);
+        int ans = 0, count = 0;//ans代表结果 count代表连通的边数
+        while(count < n) {
+            int i = findMin(edges)[0];
+            int j = findMin(edges)[1];
+            if(uf.union(i, j) == 1) {
+                //count++;
+                ans += edges[i][j];
+            }
+            count++;
+            edges[i][j] = Integer.MAX_VALUE;
         }
-        int ansNum = flag * Integer.parseInt(ans);
 
-        return ansNum;
+        return ans;
 
 
 
     }
+    public static int[] findMin(int[][] edges) {
+        int n = edges.length;
+        int min = Integer.MAX_VALUE;
+        int[] minIJ = new int [2];
+        for(int i = 0; i < n; i++) {
+            for(int j = 0; j < i; j++) {
+                if(edges[i][j] < min) {
+                    minIJ[0] = i;
+                    minIJ[1] = j;
+                    min = edges[i][j];
+                }
 
-    public static int compare(String s1) {
-        String s2 = "2147483647";
-
-        if(s1.length() != s2.length()) {
-            return s1.length() - s2.length();
-        }
-        int l = s1.length();
-        for(int i = 0; i < s1.length(); i++) {
-            if(s1.charAt(i) != s2.charAt(i)) {
-                return s1.charAt(i) - s2.charAt(i);
             }
-        }//a
-        return 0;//a
+        }
+        return minIJ;
+    }
+
+    static class UnionFind {
+        private int[] parent;
+        private int[] rank;
+        public UnionFind(int n) {
+            parent = new int [n];
+            rank = new int [n];
+            for(int i = 0; i < n; i++) {
+                rank[i] = 1;
+                parent[i] = i;
+            }
+        }
+
+        public int union (int x, int y) {
+            int rootX = find(x);
+            int rootY = find(y);
+            if(rootX == rootY) {
+                return 0;
+            }
+            if(rank[rootX] == rank[rootY]) {
+                parent[rootX] = rootY;
+                rank[rootY]++;
+            } else if(rank[rootX] < rank[rootY]) {
+                parent[rootX] = rootY;
+            } else {
+                parent[rootY] = rootX;
+            }
+            return 1;
+        }
+
+        public int find(int x) {
+            if(x != parent[x]) {
+                parent[x] = find(parent[x]);
+            }
+            return parent[x];
+        }
     }
 
     public static void main(String[] args) {
-        List<String> lst = new ArrayList<String>();
-        lst.add("aaa");
-        lst.add("bbb");
-        lst.add("ccc");
-        lst.add("ddd");
-        lst.add("eee");
-        lst.add("fff");
-        Iterator<String> iterator = lst.iterator();
-        //iterator.hasNext()如果存在元素的话返回true
-        int n = 4;
-        while(n-- > 0) {
-            //iterator.next()返回迭代的下一个元素
-            System.out.println(iterator.next());
-        }
+        int[][] prob = {{1,1}, {2, 2}, {3, 4}};
+        System.out.println(minCostConnectPoints(prob));
     }
-
 }
